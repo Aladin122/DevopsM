@@ -38,6 +38,7 @@ pipeline {
             }
         }
 
+
         stage('Upload to Nexus') {
             steps {
                 script {
@@ -49,16 +50,16 @@ pipeline {
                         nexusUrl: env.NEXUS_URL,
                         repository: repo,
                         groupId: env.GROUP_ID,
-                        artifactId: env.ARTIFACT_ID,
                         version: env.VERSION,
                         credentialsId: env.NEXUS_CREDENTIALS_ID,
                         artifacts: [
-                            [file: "target/${env.ARTIFACT_ID}-${env.VERSION}.jar", type: 'jar']
+                            [artifactId: env.ARTIFACT_ID, file: "target/${env.ARTIFACT_ID}-${env.VERSION}.jar", type: 'jar']
                         ]
                     )
                 }
             }
         }
+
     }
 
     post {
