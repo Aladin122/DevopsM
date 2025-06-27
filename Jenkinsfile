@@ -8,7 +8,7 @@ pipeline {
 
  environment {
      SONARQUBE_ENV = 'SonarQubeServer'
-     NEXUS_URL = 'http://192.168.235.132:8081'
+     NEXUS_URL = '192.168.235.132:8081'
      NEXUS_CREDENTIALS_ID = 'nexus-creds'
      GROUP_ID = 'tn.esprit.spring'     // Update to match your pom
      ARTIFACT_ID = 'kaddem'            // Update to match your pom
