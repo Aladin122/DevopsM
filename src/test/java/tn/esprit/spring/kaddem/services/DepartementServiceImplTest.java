@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
 
-@ActiveProfiles("test")
+
 
 @SpringBootTest
 class DepartementServiceImplTest {
