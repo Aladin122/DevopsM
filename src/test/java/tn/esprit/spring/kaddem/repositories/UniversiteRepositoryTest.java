@@ -10,13 +10,13 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
-public class UniversiteRepositoryTest {
+ class UniversiteRepositoryTest {
 
     @Autowired
     private UniversiteRepository universiteRepository;
 
     @Test
-    public void testSaveAndRetrieveUniversite() {
+     void testSaveAndRetrieveUniversite() {
         // Create and save a Universite
         Universite universite = new Universite();
         universite.setNomUniv("Université de Tunis");
@@ -33,7 +33,7 @@ public class UniversiteRepositoryTest {
     }
 
     @Test
-    public void testDeleteUniversite() {
+     void testDeleteUniversite() {
         Universite universite = new Universite();
         universite.setNomUniv("ESPRIT");
         Universite saved = universiteRepository.save(universite);

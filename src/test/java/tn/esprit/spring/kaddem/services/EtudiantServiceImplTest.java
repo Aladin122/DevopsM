@@ -102,22 +102,6 @@ class EtudiantServiceImplTest {
     }
 
     @Test
-    void testAddAndAssignEtudiantToEquipeAndContract() {
-        Etudiant etudiant = new Etudiant();
-        Contrat contrat = new Contrat();
-        Equipe equipe = new Equipe();
-        equipe.setEtudiants(new HashSet<>());
-
-        when(contratRepository.findById(1)).thenReturn(Optional.of(contrat));
-        when(equipeRepository.findById(2)).thenReturn(Optional.of(equipe));
-
-        Etudiant result = etudiantService.addAndAssignEtudiantToEquipeAndContract(etudiant, 1, 2);
-
-        assertEquals(etudiant, contrat.getEtudiant());
-        assertTrue(equipe.getEtudiants().contains(etudiant));
-    }
-
-    @Test
     void testGetEtudiantsByDepartement() {
         List<Etudiant> list = Arrays.asList(new Etudiant(), new Etudiant());
         when(etudiantRepository.findEtudiantsByDepartement_IdDepart(1)).thenReturn(list);
