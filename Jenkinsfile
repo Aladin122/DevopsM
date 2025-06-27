@@ -6,14 +6,15 @@ pipeline {
         jdk 'jdk17'
     }
 
-    environment {
-        SONARQUBE_ENV = 'SonarQubeServer'
-        NEXUS_URL = 'http://192.168.235.132:8081/repository/maven-releases/'
-        NEXUS_CREDENTIALS_ID = 'nexus-creds'
-        GROUP_ID = 'com.example'
-        ARTIFACT_ID = 'my-spring-app'
-        VERSION = '1.0.0'
-    }
+ environment {
+     SONARQUBE_ENV = 'SonarQubeServer'
+     NEXUS_URL = 'http://192.168.235.132:8081/repository/maven-releases/'
+     NEXUS_CREDENTIALS_ID = 'nexus-creds'
+     GROUP_ID = 'tn.esprit.spring'     // Update to match your pom
+     ARTIFACT_ID = 'kaddem'            // Update to match your pom
+     VERSION = '0.0.1-SNAPSHOT'        // Update to match your pom
+ }
+
 
     stages {
         stage('Clone') {
