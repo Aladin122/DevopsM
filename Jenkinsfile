@@ -10,9 +10,11 @@ pipeline {
         SONARQUBE_ENV = 'SonarQubeServer'
         NEXUS_URL = '192.168.235.132:8081'
         NEXUS_CREDENTIALS_ID = 'nexus-creds'
-        GROUP_ID = 'tn.esprit.spring'     // Update to match your pom
-        ARTIFACT_ID = 'kaddem'            // Update to match your pom
-        VERSION = '0.0.1-SNAPSHOT'        // Update to match your pom
+        GROUP_ID = 'tn.esprit.spring'
+        ARTIFACT_ID = 'kaddem'
+        VERSION = '0.0.1-SNAPSHOT'
+        IMAGE_NAME = 'kaddem-backend'
+        DOCKER_TAG = 'latest'
     }
 
     stages {
@@ -38,6 +40,13 @@ pipeline {
             }
         }
 
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    sh "docker build -t ${IMAGE_NAME}:${DOCKER_TAG} ."
+                }
+            }
+        }
 
         stage('Upload to Nexus') {
             steps {
@@ -59,7 +68,6 @@ pipeline {
                 }
             }
         }
-
     }
 
     post {
