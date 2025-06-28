@@ -13,8 +13,11 @@ pipeline {
         GROUP_ID = 'tn.esprit.spring'
         ARTIFACT_ID = 'kaddem'
         VERSION = '0.0.1-SNAPSHOT'
+
         IMAGE_NAME = 'kaddem-backend'
-        DOCKER_TAG = 'latest'
+        DOCKER_TAG = "${VERSION}"                      // Tag image with version
+        DOCKER_REPO = 'docker-hosted'                  // Your Nexus Docker repo name
+        FULL_IMAGE_NAME = "${NEXUS_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${DOCKER_TAG}"
     }
 
     stages {
@@ -48,7 +51,24 @@ pipeline {
             }
         }
 
-        stage('Upload to Nexus') {
+        stage('Tag and Push Docker Image to Nexus') {
+            steps {
+                script {
+                    // Tag image with Nexus repo URL
+                    sh "docker tag ${IMAGE_NAME}:${DOCKER_TAG} ${FULL_IMAGE_NAME}"
+
+                    // Login to Nexus Docker registry
+                    withCredentials([usernamePassword(credentialsId: "${NEXUS_CREDENTIALS_ID}", usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+                        sh "docker login -u $NEXUS_USER -p $NEXUS_PASS ${NEXUS_URL}"
+                    }
+
+                    // Push image to Nexus
+                    sh "docker push ${FULL_IMAGE_NAME}"
+                }
+            }
+        }
+
+        stage('Upload Artifact to Nexus') {
             steps {
                 script {
                     def repo = env.VERSION.endsWith('-SNAPSHOT') ? 'maven-snapshots' : 'maven-releases'
