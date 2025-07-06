@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  kaddem-app:
+    image: 192.168.235.132:8082/docker-releases2/kaddem-backend:latest
+    container_name: kaddem-app
+    ports:
+      - "8089:8089"
+    restart: unless-stopped
