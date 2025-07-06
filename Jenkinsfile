@@ -14,16 +14,15 @@ pipeline {
         VERSION = '0.0.1-SNAPSHOT'
 
         // Maven Nexus
-        NEXUS_URL = '192.168.235.132:8081'
-        NEXUS_CREDENTIALS_ID = 'nexus-creds'
+        NEXUS_URL = '192.168.235.132:8081'  // For Maven repo
 
         // Docker Image
         IMAGE_NAME = 'kaddem-backend'
         DOCKER_TAG = 'latest'
 
         // Nexus Docker Registry
-        NEXUS_DOCKER_REPO = 'docker-releases'
-        NEXUS_DOCKER_URL = '192.168.235.132:8082'
+        NEXUS_DOCKER_REPO = 'docker-releases2'  // updated repo name
+        NEXUS_DOCKER_URL = '192.168.235.132:8082'  // HTTPS port for docker repo
         NEXUS_DOCKER_CREDS_ID = 'nexus-docker-creds'
     }
 
