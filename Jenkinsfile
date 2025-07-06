@@ -95,12 +95,12 @@ pipeline {
             steps {
                 dir('.') {
                     script {
-                        // Try to stop old containers (ignore failure)
-                        sh 'docker-compose down || true'
-                        // Pull latest images (optional, depends on your setup)
-                        sh 'docker-compose pull || true'
-                        // Start containers detached
-                        sh 'docker-compose up -d'
+                      sh '''
+                          docker-compose down --remove-orphans || true
+                          docker rm -f kaddem-app || true
+                          docker-compose pull || true
+                          docker-compose up -d
+                      '''
                     }
                 }
             }
