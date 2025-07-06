@@ -40,7 +40,7 @@ pipeline {
 
         stage('Build JAR') {
             steps {
-                sh 'mvn package -DskipTests'
+                sh 'mvn clean package -DskipTests'
             }
         }
 
@@ -74,7 +74,7 @@ pipeline {
             steps {
                 script {
                     def repo = env.VERSION.endsWith('-SNAPSHOT') ? 'maven-snapshots' : 'maven-releases'
-                    echo "Uploading to Nexus repository: ${repo}"
+                    echo "Uploading artifact to Nexus repo: ${repo}"
                     nexusArtifactUploader(
                         nexusVersion: 'nexus3',
                         protocol: 'http',
@@ -94,11 +94,14 @@ pipeline {
         stage('Deploy with Docker Compose') {
             steps {
                 dir('/home/ala/kaddem-backend') {
-                   sh '''
-                                   docker-compose down || true
-                                   docker-compose pull
-                                   docker-compose up -d
-                               '''
+                    script {
+                        // Try to stop old containers (ignore failure)
+                        sh 'docker-compose down || true'
+                        // Pull latest images (optional, depends on your setup)
+                        sh 'docker-compose pull || true'
+                        // Start containers detached
+                        sh 'docker-compose up -d'
+                    }
                 }
             }
         }
