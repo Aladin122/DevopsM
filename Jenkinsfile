@@ -93,7 +93,7 @@ pipeline {
 
         stage('Deploy with Docker Compose') {
             steps {
-                dir('/home/ala/kaddem-backend') {
+                dir('.') {
                     script {
                         // Try to stop old containers (ignore failure)
                         sh 'docker-compose down || true'
