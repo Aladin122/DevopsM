@@ -94,7 +94,11 @@ pipeline {
         stage('Deploy with Docker Compose') {
             steps {
                 dir('/home/ala/kaddem-backend') {
-                    sh './deploy.sh'
+                   sh '''
+                                   docker-compose down || true
+                                   docker-compose pull
+                                   docker-compose up -d
+                               '''
                 }
             }
         }
