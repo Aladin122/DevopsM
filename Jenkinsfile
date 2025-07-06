@@ -22,7 +22,7 @@ pipeline {
 
         // Nexus Docker Registry
         NEXUS_DOCKER_REPO = 'docker-releases2'  // updated repo name
-        NEXUS_DOCKER_URL = '192.168.235.132:8081'  // HTTPS port for docker repo
+        NEXUS_DOCKER_URL = '192.168.235.132:8082'  // HTTPS port for docker repo
         NEXUS_DOCKER_CREDS_ID = 'nexus-docker-creds'
     }
 
