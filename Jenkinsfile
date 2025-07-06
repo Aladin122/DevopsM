@@ -7,14 +7,24 @@ pipeline {
     }
 
     environment {
+        // General Configs
         SONARQUBE_ENV = 'SonarQubeServer'
-        NEXUS_URL = '192.168.235.132:8081'
-        NEXUS_CREDENTIALS_ID = 'nexus-creds'
         GROUP_ID = 'tn.esprit.spring'
         ARTIFACT_ID = 'kaddem'
         VERSION = '0.0.1-SNAPSHOT'
+
+        // Maven Nexus
+        NEXUS_URL = '192.168.235.132:8081'
+        NEXUS_CREDENTIALS_ID = 'nexus-creds'
+
+        // Docker Image
         IMAGE_NAME = 'kaddem-backend'
         DOCKER_TAG = 'latest'
+
+        // Nexus Docker Registry
+        NEXUS_DOCKER_REPO = 'docker-releases'
+        NEXUS_DOCKER_URL = '192.168.235.132:8082'
+        NEXUS_DOCKER_CREDS_ID = 'nexus-docker-creds'
     }
 
     stages {
@@ -34,7 +44,7 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build JAR') {
             steps {
                 sh 'mvn package -DskipTests'
             }
@@ -48,7 +58,25 @@ pipeline {
             }
         }
 
-        stage('Upload to Nexus') {
+        stage('Push Docker Image to Nexus') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: "${NEXUS_DOCKER_CREDS_ID}",
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    script {
+                        sh """
+                            echo "$DOCKER_PASS" | docker login ${NEXUS_DOCKER_URL} -u "$DOCKER_USER" --password-stdin
+                            docker tag ${IMAGE_NAME}:${DOCKER_TAG} ${NEXUS_DOCKER_URL}/${NEXUS_DOCKER_REPO}/${IMAGE_NAME}:${DOCKER_TAG}
+                            docker push ${NEXUS_DOCKER_URL}/${NEXUS_DOCKER_REPO}/${IMAGE_NAME}:${DOCKER_TAG}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Upload JAR to Nexus Maven Repo') {
             steps {
                 script {
                     def repo = env.VERSION.endsWith('-SNAPSHOT') ? 'maven-snapshots' : 'maven-releases'
@@ -72,10 +100,10 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully!'
+            echo '✅ Pipeline completed successfully!'
         }
         failure {
-            echo 'Pipeline failed.'
+            echo '❌ Pipeline failed.'
         }
     }
 }
