@@ -15,6 +15,7 @@ pipeline {
 
         // Maven Nexus
         NEXUS_URL = '192.168.235.132:8081'  // For Maven repo
+        NEXUS_CREDENTIALS_ID = 'nexus-creds' // Jenkins credentials ID for Maven repo (username/password)
 
         // Docker Image
         IMAGE_NAME = 'kaddem-backend'
@@ -22,8 +23,8 @@ pipeline {
 
         // Nexus Docker Registry
         NEXUS_DOCKER_REPO = 'docker-releases2'  // updated repo name
-        NEXUS_DOCKER_URL = '192.168.235.132:8082'  // HTTPS port for docker repo
-        NEXUS_DOCKER_CREDS_ID = 'nexus-docker-creds'
+        NEXUS_DOCKER_URL = '192.168.235.132:8082'  // Nexus Docker registry URL (HTTP/HTTPS)
+        NEXUS_DOCKER_CREDS_ID = 'nexus-docker-creds'  // Jenkins credentials ID for Docker registry (username/password)
     }
 
     stages {
@@ -77,21 +78,27 @@ pipeline {
 
         stage('Upload JAR to Nexus Maven Repo') {
             steps {
-                script {
-                    def repo = env.VERSION.endsWith('-SNAPSHOT') ? 'maven-snapshots' : 'maven-releases'
-                    echo "Uploading to Nexus repository: ${repo}"
-                    nexusArtifactUploader(
-                        nexusVersion: 'nexus3',
-                        protocol: 'http',
-                        nexusUrl: env.NEXUS_URL,
-                        repository: repo,
-                        groupId: env.GROUP_ID,
-                        version: env.VERSION,
-                        credentialsId: env.NEXUS_CREDENTIALS_ID,
-                        artifacts: [
-                            [artifactId: env.ARTIFACT_ID, file: "target/${env.ARTIFACT_ID}-${env.VERSION}.jar", type: 'jar']
-                        ]
-                    )
+                withCredentials([usernamePassword(
+                    credentialsId: "${NEXUS_CREDENTIALS_ID}",
+                    usernameVariable: 'NEXUS_USER',
+                    passwordVariable: 'NEXUS_PASS'
+                )]) {
+                    script {
+                        def repo = env.VERSION.endsWith('-SNAPSHOT') ? 'maven-snapshots' : 'maven-releases'
+                        echo "Uploading to Nexus repository: ${repo}"
+                        nexusArtifactUploader(
+                            nexusVersion: 'nexus3',
+                            protocol: 'http',
+                            nexusUrl: env.NEXUS_URL,
+                            repository: repo,
+                            groupId: env.GROUP_ID,
+                            version: env.VERSION,
+                            credentialsId: env.NEXUS_CREDENTIALS_ID,
+                            artifacts: [
+                                [artifactId: env.ARTIFACT_ID, file: "target/${env.ARTIFACT_ID}-${env.VERSION}.jar", type: 'jar']
+                            ]
+                        )
+                    }
                 }
             }
         }
