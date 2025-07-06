@@ -7,24 +7,18 @@ pipeline {
     }
 
     environment {
-        // General Configs
         SONARQUBE_ENV = 'SonarQubeServer'
         GROUP_ID = 'tn.esprit.spring'
         ARTIFACT_ID = 'kaddem'
         VERSION = '0.0.1-SNAPSHOT'
 
-        // Maven Nexus
-        NEXUS_URL = '192.168.235.132:8081'  // For Maven repo
-        NEXUS_CREDENTIALS_ID = 'nexus-creds' // Jenkins credentials ID for Maven repo (username/password)
-
-        // Docker Image
+        NEXUS_URL = '192.168.235.132:8081'
         IMAGE_NAME = 'kaddem-backend'
         DOCKER_TAG = 'latest'
-
-        // Nexus Docker Registry
-        NEXUS_DOCKER_REPO = 'docker-releases2'  // updated repo name
-        NEXUS_DOCKER_URL = '192.168.235.132:8082'  // Nexus Docker registry URL (HTTP/HTTPS)
-        NEXUS_DOCKER_CREDS_ID = 'nexus-docker-creds'  // Jenkins credentials ID for Docker registry (username/password)
+        NEXUS_DOCKER_REPO = 'docker-releases2'
+        NEXUS_DOCKER_URL = '192.168.235.132:8082'
+        NEXUS_DOCKER_CREDS_ID = 'nexus-docker-creds'
+        NEXUS_CREDENTIALS_ID = 'nexus-creds'
     }
 
     stages {
@@ -78,27 +72,33 @@ pipeline {
 
         stage('Upload JAR to Nexus Maven Repo') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: "${NEXUS_CREDENTIALS_ID}",
-                    usernameVariable: 'NEXUS_USER',
-                    passwordVariable: 'NEXUS_PASS'
-                )]) {
-                    script {
-                        def repo = env.VERSION.endsWith('-SNAPSHOT') ? 'maven-snapshots' : 'maven-releases'
-                        echo "Uploading to Nexus repository: ${repo}"
-                        nexusArtifactUploader(
-                            nexusVersion: 'nexus3',
-                            protocol: 'http',
-                            nexusUrl: env.NEXUS_URL,
-                            repository: repo,
-                            groupId: env.GROUP_ID,
-                            version: env.VERSION,
-                            credentialsId: env.NEXUS_CREDENTIALS_ID,
-                            artifacts: [
-                                [artifactId: env.ARTIFACT_ID, file: "target/${env.ARTIFACT_ID}-${env.VERSION}.jar", type: 'jar']
-                            ]
-                        )
-                    }
+                script {
+                    def repo = env.VERSION.endsWith('-SNAPSHOT') ? 'maven-snapshots' : 'maven-releases'
+                    echo "Uploading to Nexus repository: ${repo}"
+                    nexusArtifactUploader(
+                        nexusVersion: 'nexus3',
+                        protocol: 'http',
+                        nexusUrl: env.NEXUS_URL,
+                        repository: repo,
+                        groupId: env.GROUP_ID,
+                        version: env.VERSION,
+                        credentialsId: env.NEXUS_CREDENTIALS_ID,
+                        artifacts: [
+                            [artifactId: env.ARTIFACT_ID, file: "target/${env.ARTIFACT_ID}-${env.VERSION}.jar", type: 'jar']
+                        ]
+                    )
+                }
+            }
+        }
+
+        stage('Deploy with Docker Compose') {
+            steps {
+                dir('/home/ala/kaddem-backend') {
+                    sh '''
+                        docker-compose down || true
+                        docker-compose pull
+                        docker-compose up -d
+                    '''
                 }
             }
         }
