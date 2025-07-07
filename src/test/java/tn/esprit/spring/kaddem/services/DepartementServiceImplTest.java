@@ -1,9 +1,10 @@
 package tn.esprit.spring.kaddem.services;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.*;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import tn.esprit.spring.kaddem.entities.Departement;
 import tn.esprit.spring.kaddem.repositories.DepartementRepository;
 
@@ -12,13 +13,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.times;
 
-
-
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)  // <-- important pour JUnit5 + Mockito
 class DepartementServiceImplTest {
-
 
     @Mock
     private DepartementRepository departementRepository;
@@ -27,8 +24,6 @@ class DepartementServiceImplTest {
     private DepartementServiceImpl departementService;
 
     @Test
-        // Vérifie que la méthode retrieveAllDepartements retourne tous les départements disponibles.
-
     void shouldRetrieveAllDepartements() {
         Departement dep1 = new Departement(1, "aouina");
         Departement dep2 = new Departement(2, "nabeul");
@@ -44,8 +39,6 @@ class DepartementServiceImplTest {
     }
 
     @Test
-        // Vérifie que la méthode retrieveDepartement retourne un département spécifique en fonction de son ID.
-
     void shouldReturnDepartementById() {
         Departement departement = new Departement(1, "aouina");
         when(departementRepository.findById(1)).thenReturn(Optional.of(departement));
@@ -58,8 +51,6 @@ class DepartementServiceImplTest {
     }
 
     @Test
-        // Vérifie que la méthode addDepartement ajoute correctement un nouveau département.
-
     void shouldAddDepartement() {
         Departement departement = new Departement("aouina");
         when(departementRepository.save(departement)).thenReturn(new Departement(1, "aouina"));
@@ -72,8 +63,6 @@ class DepartementServiceImplTest {
     }
 
     @Test
-        // Vérifie que la méthode updateDepartement met à jour correctement un département existant.
-
     void shouldUpdateDepartement() {
         Departement departement = new Departement(1, "aouina");
         when(departementRepository.save(departement)).thenReturn(departement);
@@ -86,8 +75,6 @@ class DepartementServiceImplTest {
     }
 
     @Test
-        // Vérifie que la méthode deleteDepartement supprime correctement un département existant.
-
     void shouldDeleteDepartement() {
         Departement departement = new Departement(1, "aouina");
         when(departementRepository.findById(1)).thenReturn(Optional.of(departement));
@@ -99,8 +86,6 @@ class DepartementServiceImplTest {
     }
 
     @Test
-        // Vérifie que la méthode retrieveDepartement lève une exception lorsque l'ID du département n'existe pas.
-
     void shouldThrowExceptionWhenDepartementNotFound() {
         when(departementRepository.findById(1)).thenReturn(Optional.empty());
 
@@ -110,5 +95,4 @@ class DepartementServiceImplTest {
 
         assertEquals("No value present", exception.getMessage());
     }
-
 }

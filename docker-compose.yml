@@ -1,16 +1,14 @@
 version: "3.8"
 
 services:
-  mysql-db:
-    image: mysql:8.0
-    container_name: mysql-db
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: kaddem_db
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+  h2-db:
+    image: oscarfonts/h2
+    container_name: h2-db
     ports:
-      - "3306:3306"
+      - "1521:1521"   # H2 TCP Port
+      - "81:81"       # H2 Web Console
+    environment:
+      - H2_OPTIONS=-tcp -tcpAllowOthers -ifNotExists
     networks:
       - kaddem-network
     restart: unless-stopped
@@ -19,16 +17,19 @@ services:
     image: 192.168.235.132:8082/docker-releases2/kaddem-backend:latest
     container_name: kaddem-app
     depends_on:
-      - mysql-db
+      - h2-db
     ports:
       - "8089:8089"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/kaddem_db
-      SPRING_DATASOURCE_USERNAME: user
-      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_DATASOURCE_URL: jdbc:h2:tcp://h2-db:1521/~/kaddemdb
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.h2.Driver
+      SPRING_DATASOURCE_USERNAME: sa
+      SPRING_DATASOURCE_PASSWORD: ""
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.H2Dialect
+      SPRING_H2_CONSOLE_ENABLED: "true"
+      SPRING_H2_CONSOLE_PATH: /h2-console
     networks:
       - kaddem-network
     restart: unless-stopped

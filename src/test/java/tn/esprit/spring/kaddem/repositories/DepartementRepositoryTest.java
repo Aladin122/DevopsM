@@ -2,62 +2,73 @@ package tn.esprit.spring.kaddem.repositories;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import tn.esprit.spring.kaddem.entities.Departement;
 
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-
-
 class DepartementRepositoryTest {
+
     @Autowired
-   private DepartementRepository departementRepository;
-
+    private DepartementRepository departementRepository;
 
     @Test
-     void shouldGellAllDepartments(){
-        //arange
-       /* List<Departement> departements= (List<Departement>) departementRepository.findAll();
-
-        //act
-        //assert
-        assertEquals(3,departements.size());*/
+    void shouldGetAllDepartments() {
+        // Exemple simple, à adapter si tu as des données en base
+        var departements = departementRepository.findAll();
+        assertNotNull(departements);
+        // assertEquals(expectedSize, departements.size()); // décommente et ajuste si tu as des données
     }
 
     @Test
-    void shouldGetDepartementId(){
-      //  Departement dept = departementRepository.findById(1).get();
-     //   assertNotNull(dept);
+    void shouldGetDepartementById() {
+        // Arrange : créer et sauvegarder un nouveau département
+        Departement dep = new Departement();
+        dep.setNomDepart("TestDep");
+        Departement savedDep = departementRepository.save(dep); // L'id est généré automatiquement
+
+        // Act : récupérer ce département par son id
+        Optional<Departement> optionalDep = departementRepository.findById(savedDep.getIdDepart());
+
+        // Assert : vérifier que l'on trouve bien le département
+        assertTrue(optionalDep.isPresent(), "Departement should be found by ID");
+        assertEquals("TestDep", optionalDep.get().getNomDepart());
     }
 
+
     @Test
-    void shouldSaveDepartement(){
-        Departement dep=new Departement();
-        dep.setIdDepart(1);
+    void shouldSaveDepartement() {
+        Departement dep = new Departement();
+        // Ne fixe pas l'id manuellement si c'est auto-généré
         dep.setNomDepart("soukra");
-      Departement savedDep=  departementRepository.save(dep);
-        //dep.setEtudiants();
+        Departement savedDep = departementRepository.save(dep);
+
         assertNotNull(savedDep.getIdDepart());
-        assertNotNull(savedDep.getNomDepart());
-
+        assertEquals("soukra", savedDep.getNomDepart());
     }
-  void shouldUpdateDepartement(){
-        Departement dep=departementRepository.findById(1).get();
-        dep.setNomDepart("Aouina");
 
-        Departement savedDep=departementRepository.save(dep);
-        assertEquals("Aouina",savedDep.getNomDepart());
+    @Test
+    void shouldUpdateDepartement() {
+        Departement dep = new Departement();
+        dep.setNomDepart("Old Name");
+        Departement savedDep = departementRepository.save(dep);
 
+        savedDep.setNomDepart("Aouina");
+        Departement updatedDep = departementRepository.save(savedDep);
 
-  }
+        assertEquals("Aouina", updatedDep.getNomDepart());
+    }
 
+    @Test
+    void shouldDeleteDepartement() {
+        Departement dep = new Departement();
+        dep.setNomDepart("ToDelete");
+        Departement savedDep = departementRepository.save(dep);
 
-  @Test
-    void shouldDeleteDepartement(){
-   //     departementRepository.deleteById(1);
-     // assertFalse(departementRepository.findById(1).isPresent());
-  }
+        departementRepository.deleteById(savedDep.getIdDepart());
+        assertFalse(departementRepository.findById(savedDep.getIdDepart()).isPresent());
+    }
 }
