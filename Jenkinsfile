@@ -100,23 +100,29 @@ pipeline {
             }
         }
 
-        stage('Deploy with Docker Compose') {
-            steps {
-                dir('.') {
-                    script {
-                        echo "🚀 Deploying app and H2 container (remove containers if exist)"
-                        sh '''
-                            docker-compose down --remove-orphans || true
-                            docker rm -f kaddem-app || true
-                            docker rm -f h2-db || true
-                            docker-compose pull || true
-                            docker-compose up -d
-                        '''
-                    }
-                }
-            }
-        }
-    }
+       stage('Deploy with Docker Compose') {
+           steps {
+               dir('.') {
+                   script {
+                       echo "🚀 Deploying backend, frontend, and database containers"
+                       sh '''
+                           # Ensure network exists
+                           docker network ls | grep kaddem-network || docker network create --driver bridge kaddem-network
+
+                           # Cleanup previous containers
+                           docker-compose down --remove-orphans || true
+                           docker rm -f kaddem-app h2-db frontend-app || true
+
+                           # Pull latest images (optional if already built and pushed)
+                           docker-compose pull || true
+
+                           # Deploy everything
+                           docker-compose up -d
+                       '''
+                   }
+               }
+           }
+       }
 
     post {
         success {

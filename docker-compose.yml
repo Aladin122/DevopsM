@@ -3,8 +3,8 @@ services:
     image: oscarfonts/h2
     container_name: h2-db
     ports:
-      - "1521:1521"   # TCP Port for H2 connections
-      - "81:81"       # Web Console
+      - "1521:1521"
+      - "81:81"
     environment:
       - H2_OPTIONS=-tcp -tcpAllowOthers -ifNotExists
     networks:
@@ -32,6 +32,17 @@ services:
       - kaddem-network
     restart: unless-stopped
 
+  frontend-app:
+    image: 192.168.235.132:8082/docker-releases2/react-frontend:latest
+    container_name: frontend-app
+    ports:
+      - "5173:80"
+    networks:
+      - kaddem-network
+    restart: unless-stopped
+    depends_on:
+      - kaddem-app
+
 networks:
   kaddem-network:
-    driver: bridge
+    external: true
