@@ -22,6 +22,53 @@ pipeline {
     }
 
     stages {
+        stage('Cleanup Nexus Maven Artifacts') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: "${NEXUS_CREDENTIALS_ID}",
+                    usernameVariable: 'NEXUS_USER',
+                    passwordVariable: 'NEXUS_PASS'
+                )]) {
+                    script {
+                        // Construct Nexus REST API URL to delete old snapshots/releases for this artifact
+                        def repo = env.VERSION.endsWith('-SNAPSHOT') ? 'maven-snapshots' : 'maven-releases'
+                        echo "Cleaning up old Maven artifacts in Nexus repository: ${repo}"
+
+                        // Example REST API call to delete artifact version (customize as needed)
+                        sh """
+                        curl -u $NEXUS_USER:$NEXUS_PASS -X DELETE "${NEXUS_URL}/repository/${repo}/${GROUP_ID.replace('.', '/')}/${ARTIFACT_ID}/${VERSION}/"
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Cleanup Old Docker Images') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: "${NEXUS_DOCKER_CREDS_ID}",
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    script {
+                        echo "Cleaning up old Docker images from Nexus Docker repo"
+                        // Example: Delete old image tag via Nexus Docker registry API
+                        // This depends on your Nexus version and Docker registry API support
+                        // You may have to customize this call or do manual cleanup
+
+                        sh """
+                        # Log in to Nexus Docker registry
+                        echo "$DOCKER_PASS" | docker login ${NEXUS_DOCKER_URL} -u "$DOCKER_USER" --password-stdin
+
+                        # Remove local images before rebuild to save space
+                        docker rmi -f ${IMAGE_NAME}:${DOCKER_TAG} || true
+                        docker rmi -f ${NEXUS_DOCKER_URL}/${NEXUS_DOCKER_REPO}/${IMAGE_NAME}:${DOCKER_TAG} || true
+                        """
+                    }
+                }
+            }
+        }
+
         stage('Clone') {
             steps {
                 git branch: 'main', url: 'https://github.com/Aladin122/DevopsM.git'
