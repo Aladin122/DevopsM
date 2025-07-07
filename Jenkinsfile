@@ -46,26 +46,22 @@ pipeline {
 
         stage('Build Backend Docker Image') {
             steps {
-                script {
-                    sh "docker build -t ${IMAGE_NAME}:${DOCKER_TAG} ."
-                }
+                sh "docker build -t ${IMAGE_NAME}:${DOCKER_TAG} ."
             }
         }
 
-        stage('Push Backend Image to Nexus') {
+        stage('Push Backend Docker Image to Nexus') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: "${NEXUS_DOCKER_CREDS_ID}",
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    script {
-                        sh """
-                            echo "$DOCKER_PASS" | docker login ${NEXUS_DOCKER_URL} -u "$DOCKER_USER" --password-stdin
-                            docker tag ${IMAGE_NAME}:${DOCKER_TAG} ${NEXUS_DOCKER_URL}/${NEXUS_DOCKER_REPO}/${IMAGE_NAME}:${DOCKER_TAG}
-                            docker push ${NEXUS_DOCKER_URL}/${NEXUS_DOCKER_REPO}/${IMAGE_NAME}:${DOCKER_TAG}
-                        """
-                    }
+                    sh """
+                        echo "$DOCKER_PASS" | docker login ${NEXUS_DOCKER_URL} -u "$DOCKER_USER" --password-stdin
+                        docker tag ${IMAGE_NAME}:${DOCKER_TAG} ${NEXUS_DOCKER_URL}/${NEXUS_DOCKER_REPO}/${IMAGE_NAME}:${DOCKER_TAG}
+                        docker push ${NEXUS_DOCKER_URL}/${NEXUS_DOCKER_REPO}/${IMAGE_NAME}:${DOCKER_TAG}
+                    """
                 }
             }
         }
@@ -91,25 +87,23 @@ pipeline {
             }
         }
 
-        stage('Deploy All with Docker Compose') {
+        stage('Deploy Backend + Frontend + H2') {
             steps {
                 dir('.') {
                     script {
                         echo "🚀 Deploying backend, frontend, and H2 database containers"
                         sh '''
-                            # Ensure Docker network exists
-                            if ! docker network ls --format '{{ .Name }}' | grep -q '^kaddem-network$'; then
-                                docker network create --driver bridge kaddem-network
-                            fi
+                            # Create the network if not exists
+                            docker network ls | grep kaddem-network || docker network create --driver bridge kaddem-network
 
-                            # Stop and remove old containers if exist
+                            # Stop & clean old containers
                             docker-compose down --remove-orphans || true
                             docker rm -f kaddem-app h2-db frontend-app || true
 
-                            # Pull latest images from Nexus
+                            # Pull all images from Nexus
                             docker-compose pull || true
 
-                            # Launch containers
+                            # Run all services
                             docker-compose up -d
                         '''
                     }
