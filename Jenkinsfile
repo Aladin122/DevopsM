@@ -104,9 +104,11 @@ pipeline {
             steps {
                 dir('.') {
                     script {
+                        echo "🚀 Deploying app and H2 container (remove containers if exist)"
                         sh '''
                             docker-compose down --remove-orphans || true
                             docker rm -f kaddem-app || true
+                            docker rm -f h2-db || true
                             docker-compose pull || true
                             docker-compose up -d
                         '''
