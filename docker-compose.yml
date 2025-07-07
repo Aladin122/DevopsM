@@ -1,12 +1,10 @@
-version: "3.8"
-
 services:
   h2-db:
     image: oscarfonts/h2
     container_name: h2-db
     ports:
-      - "1521:1521"   # H2 TCP Port
-      - "81:81"       # H2 Web Console
+      - "1521:1521"   # TCP Port for H2 connections
+      - "81:81"       # Web Console
     environment:
       - H2_OPTIONS=-tcp -tcpAllowOthers -ifNotExists
     networks:
@@ -21,7 +19,7 @@ services:
     ports:
       - "8089:8089"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:h2:tcp://h2-db:1521/~/kaddemdb
+      SPRING_DATASOURCE_URL: jdbc:h2:tcp://h2-db:1521/mem:kaddem
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.h2.Driver
       SPRING_DATASOURCE_USERNAME: sa
       SPRING_DATASOURCE_PASSWORD: ""
