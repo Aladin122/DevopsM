@@ -28,7 +28,6 @@ pipeline {
             }
         }
 
-
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
@@ -45,15 +44,7 @@ pipeline {
             }
         }
 
-        stage('Stop H2 Database') {
-            steps {
-                echo "Stopping H2 database container"
-                sh 'docker-compose stop h2-db'
-                // Optionnel : sh 'docker-compose rm -f h2-db' si tu veux le supprimer
-            }
-        }
-
-        stage('Build Docker Image') {
+        stage('Build Backend Docker Image') {
             steps {
                 script {
                     sh "docker build -t ${IMAGE_NAME}:${DOCKER_TAG} ."
@@ -61,7 +52,7 @@ pipeline {
             }
         }
 
-        stage('Push Docker Image to Nexus') {
+        stage('Push Backend Image to Nexus') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: "${NEXUS_DOCKER_CREDS_ID}",
@@ -100,29 +91,32 @@ pipeline {
             }
         }
 
-       stage('Deploy with Docker Compose') {
-           steps {
-               dir('.') {
-                   script {
-                       echo "🚀 Deploying backend, frontend, and database containers"
-                       sh '''
-                           # Ensure network exists
-                           docker network ls | grep kaddem-network || docker network create --driver bridge kaddem-network
+        stage('Deploy All with Docker Compose') {
+            steps {
+                dir('.') {
+                    script {
+                        echo "🚀 Deploying backend, frontend, and H2 database containers"
+                        sh '''
+                            # Ensure Docker network exists
+                            if ! docker network ls --format '{{ .Name }}' | grep -q '^kaddem-network$'; then
+                                docker network create --driver bridge kaddem-network
+                            fi
 
-                           # Cleanup previous containers
-                           docker-compose down --remove-orphans || true
-                           docker rm -f kaddem-app h2-db frontend-app || true
+                            # Stop and remove old containers if exist
+                            docker-compose down --remove-orphans || true
+                            docker rm -f kaddem-app h2-db frontend-app || true
 
-                           # Pull latest images (optional if already built and pushed)
-                           docker-compose pull || true
+                            # Pull latest images from Nexus
+                            docker-compose pull || true
 
-                           # Deploy everything
-                           docker-compose up -d
-                       '''
-                   }
-               }
-           }
-       }
+                            # Launch containers
+                            docker-compose up -d
+                        '''
+                    }
+                }
+            }
+        }
+    }
 
     post {
         success {
