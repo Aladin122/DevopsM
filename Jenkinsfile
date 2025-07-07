@@ -28,12 +28,6 @@ pipeline {
             }
         }
 
-        stage('Start H2 Database') {
-            steps {
-                echo "Starting H2 database container via docker-compose"
-                sh 'docker-compose up -d h2-db'
-            }
-        }
 
         stage('SonarQube Analysis') {
             steps {
