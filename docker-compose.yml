@@ -33,7 +33,7 @@ services:
     restart: unless-stopped
 
   frontend-app:
-    image: 192.168.235.132:8082/docker-releases2/react-frontend:latest
+    image: 192.168.235.132:8082/docker-releases2/frontend-react:latest
     container_name: frontend-app
     ports:
       - "5173:80"
